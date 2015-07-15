@@ -6,34 +6,26 @@ First of all you need to add the required permissions:
     <uses-permission android:name="ANDROID.PERMISSION.BLUETOOTH"/>
     <uses-permission android:name="ANDROID.PERMISSION.BLUETOOTH_ADMIN"/>
 
-Then it is very simple ! Here is a simple example.
+Then it is very simple ! First initialise the object.
 
-    public class MainActivity extends Activity implements Bluetooth.OnConnectedListener, Bluetooth.OnConnectionClosedListener, Bluetooth.OnReceivedMessageListener{
-        private Bluetooth bt;
+    Bluetooth bt = new Bluetooth();
+    
+You can also add listeners but don't forget to implements them.
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    public class MainActivity extends Activity implements Bluetooth.OnConnectedListener, Bluetooth.OnConnectionClosedListener, Bluetooth.OnReceivedMessageListener
+    /*
+        ...
+     */
+    bt.setOnConnectedListener(this);
+    bt.setOnConnectionClosedListener(this);
+    bt.setOnReceivedMessageListener(this);
+    
+Connecting to the device named "HC-06" /!\ you must be paired with it first, via the settings app /!\ 
+This function is asynchronous !
 
-        /*
-            This code is for connecting to a bluetooth device called "HC-06"
-         */
-        bt = new Bluetooth();
-
-        /*
-            Listeners
-         */
-        bt.setOnConnectedListener(this);
-        bt.setOnConnectionClosedListener(this);
-        bt.setOnReceivedMessageListener(this);
-
-        /*
-            Connecting to the device /!\ you must be paired with it first, via the settings app /!\
-            This function is asynchronous !
-         */
-        bt.connectByName("HC-06");
-    }
+    bt.connectByName("HC-06");
+    
+Finally you have all the function implemented.
 
     @Override
     public void OnConnected(BluetoothDevice device) {
@@ -58,4 +50,3 @@ Then it is very simple ! Here is a simple example.
     public void OnReceivedMessage(String message) {
         // The device sent you a message
     }
-}
