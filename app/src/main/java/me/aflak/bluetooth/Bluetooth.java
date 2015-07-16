@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -32,10 +34,9 @@ public class Bluetooth {
 
     public Bluetooth(){
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        enableBT();
     }
 
-    private void enableBT(){
+    public void enableBluetooth(){
         if(bluetoothAdapter!=null) {
             if (!bluetoothAdapter.isEnabled()) {
                 bluetoothAdapter.enable();
@@ -156,6 +157,14 @@ public class Bluetooth {
                 }
             }
         }
+    }
+
+    public List<BluetoothDevice> getPairedDevices(){
+        List<BluetoothDevice> devices = new ArrayList<BluetoothDevice>();
+        for (BluetoothDevice blueDevice : bluetoothAdapter.getBondedDevices()) {
+            devices.add(blueDevice);
+        }
+        return devices;
     }
 
     public BluetoothSocket getSocket(){

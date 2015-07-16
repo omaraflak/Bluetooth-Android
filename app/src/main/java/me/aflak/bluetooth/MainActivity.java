@@ -19,6 +19,7 @@ public class MainActivity extends Activity implements Bluetooth.OnConnectedListe
             This code is for connecting to a bluetooth device called "HC-06"
          */
         bt = new Bluetooth();
+        bt.enableBluetooth();
 
         /*
             Listeners
