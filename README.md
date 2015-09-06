@@ -25,7 +25,7 @@ This function is asynchronous !
 
     bt.connectByName("HC-06");
     
-Finally you have all the function implemented.
+Finally you have all the functions implemented.
 
     @Override
     public void OnConnected(BluetoothDevice device) {
