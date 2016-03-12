@@ -6,9 +6,10 @@ First of all you need to add the required permissions:
     <uses-permission android:name="ANDROID.PERMISSION.BLUETOOTH"/>
     <uses-permission android:name="ANDROID.PERMISSION.BLUETOOTH_ADMIN"/>
 
-Then it is very simple ! First initialise the object.
+Then it is very simple ! First initialise the object and activate the bluetooth.
 
     Bluetooth bt = new Bluetooth();
+    bt.enableBluetooth();
     
 You can also add listeners but don't forget to implements them.
 
@@ -50,3 +51,7 @@ Finally you have all the functions implemented.
     public void OnReceivedMessage(String message) {
         // The device sent you a message
     }
+
+# Sample
+
+https://github.com/omaflak/Bluetooth-Android/blob/master/app/src/main/java/me/aflak/bluetooth/MainActivity.java
