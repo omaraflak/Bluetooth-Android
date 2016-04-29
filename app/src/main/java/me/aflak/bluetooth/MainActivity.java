@@ -3,12 +3,12 @@ package me.aflak.bluetooth;
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
+import android.util.Log;
 
-import java.io.IOException;
 
-
-public class MainActivity extends Activity implements Bluetooth.OnConnectedListener, Bluetooth.OnConnectionClosedListener, Bluetooth.OnReceivedMessageListener{
+public class MainActivity extends Activity implements Bluetooth.BluetoothCallback{
     private Bluetooth bt;
+    public final static String TAG = "Bluetooth";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -22,40 +22,51 @@ public class MainActivity extends Activity implements Bluetooth.OnConnectedListe
         bt.enableBluetooth();
 
         /*
-            Listeners
+            Listener
          */
-        bt.setOnConnectedListener(this);
-        bt.setOnConnectionClosedListener(this);
-        bt.setOnReceivedMessageListener(this);
+        bt.setBluetoothCallback(this);
 
         /*
             Connecting to the device /!\ you must be paired with it first, via the settings app /!\
             This function is asynchronous !
          */
-        bt.connectByName("HC-06");
+        bt.connectToName("HC-06");      //also available:        bt.connectToAddress(address) and bt.connectToDevice(device)
     }
 
     @Override
-    public void OnConnected(BluetoothDevice device) {
-        /*
+    public void onConnect(BluetoothDevice device) {
+         /*
             Device is connected
             Send a message to the device
          */
-        bt.sendMessage("Hello World!");
+        Log.e(TAG, "Connected!");
+        Log.e(TAG, "Device = " + device.getName() + "   Address = " + device.getAddress());
+        bt.send("hello");
     }
 
     @Override
-    public void ErrorConnecting(IOException e) {
-        // An error occurred during the connection
-    }
-
-    @Override
-    public void OnConnectionClosed(BluetoothDevice device, String message) {
+    public void onDisconnect(BluetoothDevice device, String message) {
         // The connection with the device has been closed
+        Log.e(TAG, "Disconnected!");
     }
 
     @Override
-    public void OnReceivedMessage(String message) {
+    public void onMessage(String message) {
         // The device sent you a message
+        Log.e(TAG, message);
+    }
+
+    @Override
+    public void onError(String message) {
+        // An error occurred
+        Log.e(TAG, message);
+    }
+
+    @Override
+    public void onConnectError(BluetoothDevice device, String message) {
+        // An error occurred during connection
+        // try to connect again
+        Log.e(TAG, message);
+        bt.connectToDevice(device);
     }
 }

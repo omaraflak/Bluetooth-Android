@@ -2,8 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="me.aflak.bluetooth" >
 
-    <uses-permission android:name="ANDROID.PERMISSION.BLUETOOTH"/>
-    <uses-permission android:name="ANDROID.PERMISSION.BLUETOOTH_ADMIN"/>
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
 
     <application
         android:allowBackup="true"
