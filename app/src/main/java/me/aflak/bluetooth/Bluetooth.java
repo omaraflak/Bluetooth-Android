@@ -6,7 +6,6 @@ import android.bluetooth.BluetoothSocket;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
@@ -18,8 +17,6 @@ import java.util.UUID;
  */
 public class Bluetooth {
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
-    private BluetoothSocket socket;
-    private BluetoothDevice device;
     private BluetoothAdapter bluetoothAdapter;
     private ConnectThread thread;
     private boolean connected=false;
@@ -58,8 +55,8 @@ public class Bluetooth {
         thread.start();
     }
 
-    public void disconnect() throws IOException {
-        socket.close();
+    public void disconnect() {
+        thread.close();
     }
 
     public boolean isConnected(){
@@ -71,18 +68,19 @@ public class Bluetooth {
     }
 
     private class ConnectThread extends Thread {
-        private BluetoothSocket mmSocket;
+        private BluetoothSocket socket;
+        private BluetoothDevice device;
         private OutputStream out;
+        private boolean stop=false;
 
         public ConnectThread(BluetoothDevice device) {
-            Bluetooth.this.device=device;
+            this.device=device;
             try {
-                mmSocket = device.createRfcommSocketToServiceRecord(MY_UUID);
+                socket = device.createRfcommSocketToServiceRecord(MY_UUID);
             } catch (IOException e) {
                 if(listener!=null)
                     listener.onError(e.getMessage());
             }
-            Bluetooth.this.socket=mmSocket;
         }
 
         public void send(String msg){
@@ -95,25 +93,37 @@ public class Bluetooth {
             }
         }
 
+        public BluetoothDevice getDevice(){
+            return device;
+        }
+
+        public BluetoothSocket getSocket(){
+            return socket;
+        }
+
+        public void close(){
+            stop=true;
+        }
+
         public void run() {
             BufferedReader input = null;
             bluetoothAdapter.cancelDiscovery();
 
             try {
-                mmSocket.connect();
+                socket.connect();
                 connected=true;
 
-                input = new BufferedReader(new InputStreamReader(mmSocket.getInputStream()));
-                out = mmSocket.getOutputStream();
+                input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = socket.getOutputStream();
 
                 if(listener!=null)
                     listener.onConnect(device);
             } catch (IOException e) {
                 if(listener!=null)
-                    listener.onConnectError(mmSocket.getRemoteDevice(), e.getMessage());
+                    listener.onConnectError(socket.getRemoteDevice(), e.getMessage());
 
                 try {
-                    mmSocket.close();
+                    socket.close();
                 } catch (IOException closeException) {
                     if (listener != null)
                         listener.onError(closeException.getMessage());
@@ -124,14 +134,20 @@ public class Bluetooth {
                 String msg;
 
                 try {
-                    assert input != null;
-                    while ((msg = input.readLine()) != null) {
+                    while (!stop && input!=null && (msg = input.readLine()) != null) {
                         if (listener != null)
                             listener.onMessage(msg);
                     }
 
-                    if (listener != null)
-                        listener.onDisconnect(device, "null");
+                    if(!stop) {
+                        if (listener != null)
+                            listener.onDisconnect(device, "null");
+                    }
+
+                    out.close();
+                    if(input!=null)
+                        input.close();
+                    socket.close();
                 } catch (IOException e) {
                     if (listener != null)
                         listener.onDisconnect(device, e.getMessage());
@@ -149,19 +165,19 @@ public class Bluetooth {
     }
 
     public BluetoothSocket getSocket(){
-        return socket;
+        return thread.getSocket();
     }
 
     public BluetoothDevice getDevice(){
-        return device;
+        return thread.getDevice();
     }
 
     public String getDeviceName(){
-        return device.getName();
+        return thread.getDevice().getName();
     }
 
     public String getDeviceAddress(){
-        return device.getAddress();
+        return thread.getDevice().getAddress();
     }
 
 

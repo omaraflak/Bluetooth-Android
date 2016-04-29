@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.TextView;
 
 public class MainActivity extends Activity implements Bluetooth.BluetoothCallback{
     private Bluetooth bt;
