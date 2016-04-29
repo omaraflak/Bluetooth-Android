@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.util.Log;
-
+import android.widget.TextView;
 
 public class MainActivity extends Activity implements Bluetooth.BluetoothCallback{
     private Bluetooth bt;
@@ -20,6 +20,10 @@ public class MainActivity extends Activity implements Bluetooth.BluetoothCallbac
          */
         bt = new Bluetooth();
         bt.enableBluetooth();
+
+        // TextView txt = (TextView)findViewById(R.id.text);
+        // for (BluetoothDevice device : bt.getPairedDevices())
+        //         txt.append(device.getAddress()+" : "+device.getName()+"\n");
 
         /*
             Listener
