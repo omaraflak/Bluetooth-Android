@@ -35,6 +35,14 @@ public class Bluetooth {
         }
     }
 
+    public void disableBluetooth(){
+        if(bluetoothAdapter!=null) {
+            if (bluetoothAdapter.isEnabled()) {
+                bluetoothAdapter.disable();
+            }
+        }
+    }
+
     public void connectToAddress(String address) {
         BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
         thread = new ConnectThread(device);
@@ -57,6 +65,7 @@ public class Bluetooth {
 
     public void disconnect() {
         thread.close();
+        thread.interrupt();
     }
 
     public boolean isConnected(){
@@ -70,6 +79,7 @@ public class Bluetooth {
     private class ConnectThread extends Thread {
         private BluetoothSocket socket;
         private BluetoothDevice device;
+        BufferedReader input;
         private OutputStream out;
         private boolean stop=false;
 
@@ -103,10 +113,15 @@ public class Bluetooth {
 
         public void close(){
             stop=true;
+            try {
+                socket.close();
+            } catch (IOException e) {
+                if(listener!=null)
+                    listener.onError(e.getMessage());
+            }
         }
 
         public void run() {
-            BufferedReader input = null;
             bluetoothAdapter.cancelDiscovery();
 
             try {
@@ -142,12 +157,9 @@ public class Bluetooth {
                     if(!stop) {
                         if (listener != null)
                             listener.onDisconnect(device, "null");
-                    }
 
-                    out.close();
-                    if(input!=null)
-                        input.close();
-                    socket.close();
+                        socket.close();
+                    }
                 } catch (IOException e) {
                     if (listener != null)
                         listener.onDisconnect(device, e.getMessage());
