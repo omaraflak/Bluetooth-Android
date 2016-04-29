@@ -1,56 +1,62 @@
 # Bluetooth-Android
 Bluetooth is a Android class that allows you to communicate simply with a bluetooth connection.
 
-First of all you need to add the required permissions: 
 
-    <uses-permission android:name="ANDROID.PERMISSION.BLUETOOTH"/>
-    <uses-permission android:name="ANDROID.PERMISSION.BLUETOOTH_ADMIN"/>
-
-Then it is very simple ! First initialise the object and activate the bluetooth.
-
-    Bluetooth bt = new Bluetooth();
-    bt.enableBluetooth();
-    
-You can also add listeners but don't forget to implements them.
-
-    public class MainActivity extends Activity implements Bluetooth.OnConnectedListener, Bluetooth.OnConnectionClosedListener, Bluetooth.OnReceivedMessageListener
-    /*
-        ...
-     */
-    bt.setOnConnectedListener(this);
-    bt.setOnConnectionClosedListener(this);
-    bt.setOnReceivedMessageListener(this);
-    
-Connecting to the device named "HC-06" /!\ you must be paired with it first, via the settings app /!\ 
-This function is asynchronous !
-
-    bt.connectByName("HC-06");
-    
-Finally you have all the functions implemented.
-
-    @Override
-    public void OnConnected(BluetoothDevice device) {
         /*
-            Device is connected
-            Send a message to the device
+            This code is for connecting to a bluetooth device called "HC-06"
          */
-        bt.sendMessage("Hello World!");
-    }
 
-    @Override
-    public void ErrorConnecting(IOException e) {
-        // An error occurred during the connection
-    }
 
-    @Override
-    public void OnConnectionClosed(BluetoothDevice device, String message) {
-        // The connection with the device has been closed
-    }
+        Bluetooth bt = new Bluetooth();
+        bt.enableBluetooth();
 
-    @Override
-    public void OnReceivedMessage(String message) {
-        // The device sent you a message
-    }
+        /*
+            Callbacks
+         */     
+        bt.setBluetoothCallback(new Bluetooth.BluetoothCallback() {
+            @Override
+            public void onConnect(BluetoothDevice device) {
+                 /*
+                    Device is connected
+                    Send a message to the device
+                 */
+                Log.e(TAG, "Connected!");
+                Log.e(TAG, "Device = " + device.getName() + "   Address = " + device.getAddress());
+                bt.send("hello");
+            }
+
+            @Override
+            public void onDisconnect(BluetoothDevice device, String message) {
+                // The connection with the device has been closed
+                Log.e(TAG, "Disconnected!");
+            }
+
+            @Override
+            public void onMessage(String message) {
+                // The device sent you a message
+                Log.e(TAG, message);
+            }
+
+            @Override
+            public void onError(String message) {
+                // An error occurred
+                Log.e(TAG, message);
+            }
+
+            @Override
+            public void onConnectError(BluetoothDevice device, String message) {
+                // An error occurred during connection
+                // try to connect again
+                Log.e(TAG, message);
+                bt.connectToDevice(device);
+            }
+        });
+
+        /*
+            Connecting to the device /!\ you must be paired with it first, via the settings app /!\
+            This function is asynchronous !
+         */
+        bt.connectToName("HC-06");      //also available:        bt.connectToAddress(address) and bt.connectToDevice(device)
 
 # Sample
 
