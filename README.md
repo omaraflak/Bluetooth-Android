@@ -1,6 +1,3 @@
-# Bluetooth-Android
-Bluetooth is a Android class that allows you to communicate simply with a bluetooth connection.
-
 # Important
 I used a BufferedReader to read data from the bluetooth socket. As I'm reading with readLine(), each message you're sending to the Android must end with a \n. Otherwise it won't be received.
 
