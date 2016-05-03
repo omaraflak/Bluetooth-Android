@@ -12,6 +12,7 @@ The class uses listeners so everything is really easy!
 ## Set listener to pair with device
 
 	bluetooth.setDiscoveryCallback(new Bluetooth.DiscoveryCallback() {
+	
 	      @Override
 	      public void onFinish() {
 	            // scan finished
@@ -50,27 +51,27 @@ The class uses listeners so everything is really easy!
 	bluetooth.setCommunicationCallback(new Bluetooth.CommunicationCallback() {
 	      @Override
 	      public void onConnect(BluetoothDevice device) {
-	        // device connected
+	              // device connected
 	      }
-	
+	      
 	      @Override
 	      public void onDisconnect(BluetoothDevice device, String message) {
-		// device disconnected
+	            // device disconnected
 	      }
-	
+	      
 	      @Override
 	      public void onMessage(String message) {
-		// message received (it has to end with a \n to be received)
+	            // message received (it has to end with a \n to be received)
 	      }
-	
+	      
 	      @Override
 	      public void onError(String message) {
-		// error occurred 
+	            // error occurred 
 	      }
-	
+	      
 	      @Override
 	      public void onConnectError(BluetoothDevice device, String message) {
-		// error during connection
+	            // error during connection
 	      }
 	});
 	
