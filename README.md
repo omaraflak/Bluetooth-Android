@@ -9,7 +9,7 @@ The class uses listeners so everything is really easy!
 	Bluetooth bluetooth = new Bluetooth();
 	bluetooth.enableBluetooth();
 	
-## Set listener to pair with device
+## Set listener to scan and pair
 
 	bluetooth.setDiscoveryCallback(new Bluetooth.DiscoveryCallback() {
 	
@@ -46,7 +46,7 @@ The class uses listeners so everything is really easy!
 
 	bluetooth.pair(device);
 	
-## Set listener to communicate with the device
+## Set listener to communicate
 
 	bluetooth.setCommunicationCallback(new Bluetooth.CommunicationCallback() {
 	      @Override
