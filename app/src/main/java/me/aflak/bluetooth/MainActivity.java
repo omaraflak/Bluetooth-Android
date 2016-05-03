@@ -5,7 +5,7 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.util.Log;
 
-public class MainActivity extends Activity implements Bluetooth.BluetoothCallback{
+public class MainActivity extends Activity implements Bluetooth.CommunicationCallback, Bluetooth.DiscoveryCallback{
     private Bluetooth bt;
     public final static String TAG = "Bluetooth";
 
@@ -14,10 +14,8 @@ public class MainActivity extends Activity implements Bluetooth.BluetoothCallbac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /*
-            This code is for connecting to a bluetooth device called "HC-06"
-         */
-        bt = new Bluetooth();
+
+        bt = new Bluetooth(this);
         bt.enableBluetooth();
 
         // TextView txt = (TextView)findViewById(R.id.text);
@@ -25,16 +23,15 @@ public class MainActivity extends Activity implements Bluetooth.BluetoothCallbac
         //         txt.append(device.getAddress()+" : "+device.getName()+"\n");
 
         /*
-            Listener
+            Listeners
          */
-        bt.setBluetoothCallback(this);
-
-        /*
-            Connecting to the device /!\ you must be paired with it first, via the settings app /!\
-            This function is asynchronous !
-         */
-        bt.connectToName("HC-06");      //also available:        bt.connectToAddress(address) and bt.connectToDevice(device)
+        bt.setCommunicationCallback(this);
+        bt.setDiscoveryCallback(this);
     }
+
+    /* **************************** */
+    /* COMMUNICATION CALLBACK BEGIN */
+    /* **************************** */
 
     @Override
     public void onConnect(BluetoothDevice device) {
@@ -60,16 +57,62 @@ public class MainActivity extends Activity implements Bluetooth.BluetoothCallbac
     }
 
     @Override
-    public void onError(String message) {
-        // An error occurred
-        Log.e(TAG, message);
-    }
-
-    @Override
     public void onConnectError(BluetoothDevice device, String message) {
         // An error occurred during connection
         // try to connect again
         Log.e(TAG, message);
         bt.connectToDevice(device);
+    }
+
+    /* ************************** */
+    /* COMMUNICATION CALLBACK END */
+    /* ************************** */
+
+
+    /* ************************ */
+    /* DISCOVERY CALLBACK BEGIN */
+    /* ************************ */
+
+    @Override
+    public void onFinish() {
+        // The scan finished
+    }
+
+    @Override
+    public void onDevice(BluetoothDevice device) {
+        // Found a device
+        Log.d(TAG, "Found: "+device.getAddress()+" - "+device.getName());
+
+        // pair to it
+        bt.pair(device);    // bt.unpair(device) exist also
+    }
+
+    @Override
+    public void onPair(BluetoothDevice device) {
+        // device is paired
+        // lets connect to it :
+
+        /* three methods are available for connecting */
+        bt.connectToName("name");
+        bt.connectToAddress("address");
+        bt.connectToDevice(device);
+    }
+
+    @Override
+    public void onUnpair(BluetoothDevice device) {
+        // device is unpaired
+    }
+
+    /* ********************** */
+    /* DISCOVERY CALLBACK END */
+    /* ********************** */
+
+
+    // COMMON CALLBACK
+
+    @Override
+    public void onError(String message) {
+        // An error occurred
+        Log.e(TAG, message);
     }
 }

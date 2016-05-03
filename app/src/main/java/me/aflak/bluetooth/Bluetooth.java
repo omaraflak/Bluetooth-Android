@@ -1,13 +1,19 @@
 package me.aflak.bluetooth;
 
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -19,14 +25,18 @@ public class Bluetooth {
     private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805f9b34fb");
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothSocket socket;
-    private BluetoothDevice device;
+    private BluetoothDevice device, devicePair;
     private BufferedReader input;
     private OutputStream out;
 
     private boolean connected=false;
-    private BluetoothCallback listener=null;
+    private CommunicationCallback communicationCallback=null;
+    private DiscoveryCallback discoveryCallback=null;
 
-    public Bluetooth(){
+    private Activity activity;
+
+    public Bluetooth(Activity activity){
+        this.activity=activity;
         bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
     }
 
@@ -68,8 +78,8 @@ public class Bluetooth {
         try {
             socket.close();
         } catch (IOException e) {
-            if(listener!=null)
-                listener.onError(e.getMessage());
+            if(communicationCallback!=null)
+                communicationCallback.onError(e.getMessage());
         }
     }
 
@@ -82,8 +92,8 @@ public class Bluetooth {
             out.write(msg.getBytes());
         } catch (IOException e) {
             connected=false;
-            if(listener!=null)
-                listener.onDisconnect(device, e.getMessage());
+            if(communicationCallback!=null)
+                communicationCallback.onDisconnect(device, e.getMessage());
         }
     }
 
@@ -92,13 +102,13 @@ public class Bluetooth {
             String msg;
             try {
                 while ((msg = input.readLine()) != null) {
-                    if (listener != null)
-                        listener.onMessage(msg);
+                    if (communicationCallback != null)
+                        communicationCallback.onMessage(msg);
                 }
             } catch (IOException e) {
                 connected=false;
-                if (listener != null)
-                    listener.onDisconnect(device, e.getMessage());
+                if (communicationCallback != null)
+                    communicationCallback.onDisconnect(device, e.getMessage());
             }
         }
     }
@@ -109,8 +119,8 @@ public class Bluetooth {
             try {
                 Bluetooth.this.socket = device.createRfcommSocketToServiceRecord(MY_UUID);
             } catch (IOException e) {
-                if(listener!=null)
-                    listener.onError(e.getMessage());
+                if(communicationCallback!=null)
+                    communicationCallback.onError(e.getMessage());
             }
         }
 
@@ -125,17 +135,17 @@ public class Bluetooth {
 
                 new ReceiveThread().start();
 
-                if(listener!=null)
-                    listener.onConnect(device);
+                if(communicationCallback!=null)
+                    communicationCallback.onConnect(device);
             } catch (IOException e) {
-                if(listener!=null)
-                    listener.onConnectError(device, e.getMessage());
+                if(communicationCallback!=null)
+                    communicationCallback.onConnectError(device, e.getMessage());
 
                 try {
                     socket.close();
                 } catch (IOException closeException) {
-                    if (listener != null)
-                        listener.onError(closeException.getMessage());
+                    if (communicationCallback != null)
+                        communicationCallback.onError(closeException.getMessage());
                 }
             }
         }
@@ -157,7 +167,87 @@ public class Bluetooth {
         return device;
     }
 
-    public interface BluetoothCallback{
+    public void scanDevices(){
+        IntentFilter filter = new IntentFilter();
+
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+
+        activity.registerReceiver(mReceiverScan, filter);
+        bluetoothAdapter.startDiscovery();
+    }
+
+    public void pair(BluetoothDevice device){
+        activity.registerReceiver(mPairReceiver, new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED));
+        devicePair=device;
+        try {
+            Method method = device.getClass().getMethod("createBond", (Class[]) null);
+            method.invoke(device, (Object[]) null);
+        } catch (Exception e) {
+            if(discoveryCallback!=null)
+                discoveryCallback.onError(e.getMessage());
+        }
+    }
+
+    public void unpair(BluetoothDevice device) {
+        devicePair=device;
+        try {
+            Method method = device.getClass().getMethod("removeBond", (Class[]) null);
+            method.invoke(device, (Object[]) null);
+        } catch (Exception e) {
+            if(discoveryCallback!=null)
+                discoveryCallback.onError(e.getMessage());
+        }
+    }
+
+    private BroadcastReceiver mReceiverScan = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            switch (action) {
+                case BluetoothAdapter.ACTION_STATE_CHANGED:
+                    final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+                    if (state == BluetoothAdapter.STATE_OFF) {
+                        if (discoveryCallback != null)
+                            discoveryCallback.onError("Bluetooth turned off");
+                    }
+                    break;
+                case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
+                    context.unregisterReceiver(mReceiverScan);
+                    if (discoveryCallback != null)
+                        discoveryCallback.onFinish();
+                    break;
+                case BluetoothDevice.ACTION_FOUND:
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    if (discoveryCallback != null)
+                        discoveryCallback.onDevice(device);
+                    break;
+            }
+        }
+    };
+
+    private final BroadcastReceiver mPairReceiver = new BroadcastReceiver() {
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+
+            if (BluetoothDevice.ACTION_BOND_STATE_CHANGED.equals(action)) {
+                final int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE, BluetoothDevice.ERROR);
+                final int prevState	= intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, BluetoothDevice.ERROR);
+
+                if (state == BluetoothDevice.BOND_BONDED && prevState == BluetoothDevice.BOND_BONDING) {
+                    if(discoveryCallback!=null)
+                        discoveryCallback.onPair(devicePair);
+                } else if (state == BluetoothDevice.BOND_NONE && prevState == BluetoothDevice.BOND_BONDED){
+                    if(discoveryCallback!=null)
+                        discoveryCallback.onUnpair(devicePair);
+                }
+            }
+        }
+    };
+
+    interface CommunicationCallback{
         void onConnect(BluetoothDevice device);
         void onDisconnect(BluetoothDevice device, String message);
         void onMessage(String message);
@@ -165,12 +255,28 @@ public class Bluetooth {
         void onConnectError(BluetoothDevice device, String message);
     }
 
-    public void setBluetoothCallback(BluetoothCallback listener) {
-        this.listener = listener;
+    public void setCommunicationCallback(CommunicationCallback communicationCallback) {
+        this.communicationCallback = communicationCallback;
     }
 
-    public void removeBluetoothCallback(){
-        this.listener = null;
+    public void removeCommunicationCallback(){
+        this.communicationCallback = null;
+    }
+
+    interface DiscoveryCallback{
+        void onFinish();
+        void onDevice(BluetoothDevice device);
+        void onPair(BluetoothDevice device);
+        void onUnpair(BluetoothDevice device);
+        void onError(String message);
+    }
+
+    public void setDiscoveryCallback(DiscoveryCallback discoveryCallback){
+        this.discoveryCallback=discoveryCallback;
+    }
+
+    public void removeDiscoveryCallback(){
+        this.discoveryCallback=null;
     }
 
 }
