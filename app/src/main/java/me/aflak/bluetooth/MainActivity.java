@@ -27,6 +27,7 @@ public class MainActivity extends Activity implements Bluetooth.CommunicationCal
          */
         bt.setCommunicationCallback(this);
         bt.setDiscoveryCallback(this);
+        bt.scanDevices();
     }
 
     /* **************************** */
