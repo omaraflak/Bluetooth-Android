@@ -4,12 +4,12 @@ The class uses listeners so everything is really easy!
 
 # How to use
 
-In your Activity
+1) In your Activity
 
 	Bluetooth bluetooth = new Bluetooth();
 	bluetooth.enableBluetooth();
 	
-Set listener to pair with device
+2) Set listener to pair with device
 
 	bluetooth.setDiscoveryCallback(new Bluetooth.DiscoveryCallback() {
 	
