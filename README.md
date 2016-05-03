@@ -39,7 +39,8 @@ The class uses listeners so everything is really easy!
 	      }
 	});
 	
-	// finally scan devices
+### Scan
+
 	bluetooth.scanDevices();
 	
 ## Pair with a device you discovered
