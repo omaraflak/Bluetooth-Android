@@ -5,6 +5,8 @@ import android.bluetooth.BluetoothDevice;
 import android.os.Bundle;
 import android.util.Log;
 
+import java.util.List;
+
 public class MainActivity extends Activity implements Bluetooth.CommunicationCallback, Bluetooth.DiscoveryCallback{
     private Bluetooth bt;
     public final static String TAG = "Bluetooth";
@@ -14,60 +16,19 @@ public class MainActivity extends Activity implements Bluetooth.CommunicationCal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
         bt = new Bluetooth(this);
         bt.enableBluetooth();
 
-        // TextView txt = (TextView)findViewById(R.id.text);
-        // for (BluetoothDevice device : bt.getPairedDevices())
-        //         txt.append(device.getAddress()+" : "+device.getName()+"\n");
+        /*  GET PAIRED DEVICES  */
+        List<BluetoothDevice> devices = bt.getPairedDevices();
 
-        /*
-            Listeners
-         */
-        bt.setCommunicationCallback(this);
+        /*  LISTENERS  */
         bt.setDiscoveryCallback(this);
+        bt.setCommunicationCallback(this);
+
+        /*  SCAN  */
         bt.scanDevices();
     }
-
-    /* **************************** */
-    /* COMMUNICATION CALLBACK BEGIN */
-    /* **************************** */
-
-    @Override
-    public void onConnect(BluetoothDevice device) {
-         /*
-            Device is connected
-            Send a message to the device
-         */
-        Log.e(TAG, "Connected!");
-        Log.e(TAG, "Device = " + device.getName() + "   Address = " + device.getAddress());
-        bt.send("hello");
-    }
-
-    @Override
-    public void onDisconnect(BluetoothDevice device, String message) {
-        // The connection with the device has been closed
-        Log.e(TAG, "Disconnected!");
-    }
-
-    @Override
-    public void onMessage(String message) {
-        // The device sent you a message
-        Log.e(TAG, message);
-    }
-
-    @Override
-    public void onConnectError(BluetoothDevice device, String message) {
-        // An error occurred during connection
-        // try to connect again
-        Log.e(TAG, message);
-        bt.connectToDevice(device);
-    }
-
-    /* ************************** */
-    /* COMMUNICATION CALLBACK END */
-    /* ************************** */
 
 
     /* ************************ */
@@ -76,24 +37,24 @@ public class MainActivity extends Activity implements Bluetooth.CommunicationCal
 
     @Override
     public void onFinish() {
-        // The scan finished
+        /*  The scan finished  */
+        Log.d(TAG, "Scan finished");
     }
 
     @Override
     public void onDevice(BluetoothDevice device) {
-        // Found a device
+        /*  DEVICE FOUND  */
         Log.d(TAG, "Found: "+device.getAddress()+" - "+device.getName());
 
-        // pair to it
+        /*  PAIRING  */
         bt.pair(device);    // bt.unpair(device) exist also
     }
 
     @Override
     public void onPair(BluetoothDevice device) {
-        // device is paired
-        // lets connect to it :
+        /*  DEVICE PAIRED  */
 
-        /* three methods are available for connecting */
+        /*  three methods are available for connecting  */
         bt.connectToName("name");
         bt.connectToAddress("address");
         bt.connectToDevice(device);
@@ -101,7 +62,7 @@ public class MainActivity extends Activity implements Bluetooth.CommunicationCal
 
     @Override
     public void onUnpair(BluetoothDevice device) {
-        // device is unpaired
+        /*  DEVICE UNPAIRED  */
     }
 
     /* ********************** */
@@ -109,11 +70,52 @@ public class MainActivity extends Activity implements Bluetooth.CommunicationCal
     /* ********************** */
 
 
+
+    /* **************************** */
+    /* COMMUNICATION CALLBACK BEGIN */
+    /* **************************** */
+
+    @Override
+    public void onConnect(BluetoothDevice device) {
+        /*  DEVICE CONNECTED  */
+        Log.d(TAG, "Connected!");
+        Log.d(TAG, "Device = " + device.getName() + "   Address = " + device.getAddress());
+
+        /*  SEND MESSAGE  */
+        bt.send("hello");
+    }
+
+    @Override
+    public void onDisconnect(BluetoothDevice device, String message) {
+        /*  The connection with the device has been closed  */
+        Log.d(TAG, "Disconnected!");
+    }
+
+    @Override
+    public void onMessage(String message) {
+        /*  The device sent you a message  */
+        Log.d(TAG, message);
+    }
+
+    @Override
+    public void onConnectError(BluetoothDevice device, String message) {
+        /*  ERROR DURING CONNECTION  */
+        Log.d(TAG, message);
+
+        /*  CONNECT AGAIN (You should wait like 5 sec)  */
+        bt.connectToDevice(device);
+    }
+
+    /* ************************** */
+    /* COMMUNICATION CALLBACK END */
+    /* ************************** */
+
+
     // COMMON CALLBACK
 
     @Override
     public void onError(String message) {
-        // An error occurred
+        /*  ERROR OCCURRED  */
         Log.e(TAG, message);
     }
 }
