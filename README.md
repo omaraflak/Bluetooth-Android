@@ -3,6 +3,11 @@ I used a BufferedReader to read data from the bluetooth socket. As I'm reading w
 
 The class uses listeners so everything is really easy! Enjoy :)
 
+## Android Manifest
+
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
 ## In your Activity
 
 	Bluetooth bluetooth = new Bluetooth();
