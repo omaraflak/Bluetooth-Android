@@ -20,22 +20,22 @@ The class uses listeners so everything is really easy!
 	
 	      @Override
 	      public void onDevice(BluetoothDevice device) {
-		// device found
+	// device found
 	      }
 	
 	      @Override
 	      public void onPair(BluetoothDevice device) {
-		// device paired
+	// device paired
 	      }
 	
 	      @Override
 	      public void onUnpair(BluetoothDevice device) {
-		// device unpaired
+	// device unpaired
 	      }
 	
 	      @Override
 	      public void onError(String message) {
-		// error occurred
+	// error occurred
 	      }
 	});
 	
