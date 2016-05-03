@@ -42,11 +42,11 @@ The class uses listeners so everything is really easy!
 	// finally scan devices
 	bluetooth.scanDevices();
 	
-Pair with a device you discovered
+## Pair with a device you discovered
 
 	bluetooth.pair(device);
 	
-Set listener to communicate with the device
+## Set listener to communicate with the device
 
 	bluetooth.setCommunicationCallback(new Bluetooth.CommunicationCallback() {
 	      @Override
@@ -75,17 +75,17 @@ Set listener to communicate with the device
 	      }
 	});
 	
-Connect to device
+## Connect to device
 	
 	// three options
 	bluetooth.connectToName("name");
 	bluetooth.connectToAddress("address");
 	bluetooth.connectToDevice(device);
 	
-Send a message
+## Send a message
 
 	bluetooth.send("message");
 	
-Get paired devices
+## Get paired devices
 
 	List<BluetoothDevice> devices = bluetooth.getPairedDevices();
