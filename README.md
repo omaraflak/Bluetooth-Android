@@ -12,28 +12,29 @@ In your Activity
 Set listener to pair with device
 
 	bt.setDiscoveryCallback(new Bluetooth.DiscoveryCallback() {
-    @Override
-    public void onFinish() {
-
-    }
-
-    @Override
-    public void onDevice(BluetoothDevice device) {
-
-    }
-
-    @Override
-    public void onPair(BluetoothDevice device) {
-
-    }
-
-    @Override
-    public void onUnpair(BluetoothDevice device) {
-
-    }
-
-    @Override
-    public void onError(String message) {
-
-    }
+	
+	      @Override
+	      public void onFinish() {
+	
+	      }
+	
+	      @Override
+	      public void onDevice(BluetoothDevice device) {
+	
+	      }
+	
+	      @Override
+	      public void onPair(BluetoothDevice device) {
+	
+	      }
+	
+	      @Override
+	      public void onUnpair(BluetoothDevice device) {
+	
+	      }
+	
+	      @Override
+	      public void onError(String message) {
+	
+	      }
 	});
