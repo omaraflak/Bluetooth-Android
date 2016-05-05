@@ -1,5 +1,5 @@
 # THE REPO HAS BEEN MOVED
 
-The library should be included in JCenter really soon!
+The library is now included in JCenter!
 
 https://github.com/omaflak/Bluetooth-Library
